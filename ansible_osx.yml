@@ -163,6 +163,7 @@
         asdf global ruby 3.2.0
         gem install bundler
         gem install rubocop
+        echo 'gem: --no-document' >> ~/.gemrc
 
     - name: "Install default node"
       shell: |
