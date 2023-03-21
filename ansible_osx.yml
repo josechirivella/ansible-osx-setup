@@ -53,6 +53,8 @@
           'openssl',
           'git',
           'pkg-config',
+          'rbenv',
+          'ruby-build',
           'readline',
           'sqlite3',
           'tmux',
@@ -141,44 +143,36 @@
         dest: "/Users/{{ lookup('env', 'USER') }}/.asdf"
         version: v0.8.1
 
-    - name: "Create a default asdf configuration"
-      template:
-        src: templates/.asdfrc.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/.asdfrc
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
+    - name: Install nvm
+      become: no
+      shell: >
+        curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | bash
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.nvm/nvm.sh"
 
-    - name: "Install asdf plugins"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        asdf plugin-add {{ item }} || exit 0
-      with_items:
-        - ruby
-        - nodejs
+    - name: Install node
+      become: no
+      shell: >
+        . {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm install {{ item }}
+      args:
+        executable: /bin/bash
+        chdir: "{{ ansible_env.HOME }}"
+        creates: "{{ ansible_env.HOME }}/.nvm/versions/{{ item }}"
+      loop:
+        - 16.15
+
 
     - name: "Install Default Ruby"
       shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        asdf install ruby 3.2.0
-        asdf global ruby 3.2.0
+        rbenv install 3.2.0
+        rbenv global 3.2.0
         gem install bundler
-        gem install rubocop
         echo 'gem: --no-document' >> ~/.gemrc
-
-    - name: "Install default node"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        bash /Users/{{ lookup('env', 'USER') }}/.asdf/plugins/nodejs/bin/import-release-team-keyring
-        asdf install nodejs 18.13.0
-        asdf global nodejs 18.13.0
 
     - name: Install yarn packages
       shell: yarn global add {{ item }}
       with_items:
         - @angular/cli
         - typescript
-
-    - name: re-generate bins now we've installed some yarn packages
-      shell: asdf reshim nodejs
-
-
