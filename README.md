@@ -22,10 +22,10 @@ The easiest way to understand what's installed is to read the contents of `ansib
 
 - ZSH + Oh My Zsh as the primary shell
 - Homebrew for package management
-- ASDF for version management (along with plugins and default versions for ruby, python, javascript, elixir and erlang)
-- Virtualbox, Vagrant and Docker
+- nvm for Node Version Manager
+- Rbenv for Ruby Version Manager
+- Docker
 - VSCode + default plugins and configuration
-- A selection of Android SDK's
 - Lots of other tools and utilities
 
 ## Customising
