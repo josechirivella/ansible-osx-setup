@@ -55,6 +55,8 @@
           'pkg-config',
           'rbenv',
           'ruby-build',
+          'rbenv-default-gems',
+          'rbenv-gemset',
           'readline',
           'sqlite3',
           'tmux',
@@ -163,12 +165,12 @@
       loop:
         - 16.15
 
-
     - name: "Install Default Ruby"
       shell: |
         rbenv install 3.2.0
         rbenv global 3.2.0
         gem install bundler
+        echo 'bundler' >> "$(brew --prefix rbenv)/default-gems"
         echo 'gem: --no-document' >> ~/.gemrc
 
     - name: Install yarn packages
