@@ -27,7 +27,6 @@
       with_items:
         - docker
         - figma
-        - google-cloud-sdk
         - iterm2
         - slack
         - visual-studio-code
@@ -45,7 +44,7 @@
           'gnu-time',
           'gpg',
           'htop',
-          'imagemagick@6',
+          'imagemagick',
           'libtool',
           'libxslt',
           'libyaml',
