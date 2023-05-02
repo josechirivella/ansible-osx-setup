@@ -25,7 +25,6 @@
         name: "{{ item }}"
       ignore_errors: yes
       with_items:
-        - 1password
         - docker
         - figma
         - google-cloud-sdk
@@ -40,6 +39,7 @@
         name: [
           'autoconf',
           'automake',
+          'composer',
           'coreutils',
           'curl',
           'gnu-time',
@@ -50,16 +50,20 @@
           'libxslt',
           'libyaml',
           'mas',
+          'mysql',
           'openssl',
           'git',
           'pkg-config',
+          'redis',
           'rbenv',
           'ruby-build',
           'rbenv-default-gems',
           'rbenv-gemset',
           'readline',
           'sqlite3',
+          'supervisor',
           'tmux',
+          'php@8.1',
           'unzip',
           'vim',
           'yarn',
@@ -140,11 +144,6 @@
     #     - streetsidesoftware.code-spell-checker
     #     - fabiospampinato.vscode-todo-plus
 
-    - git:
-        repo: https://github.com/asdf-vm/asdf.git
-        dest: "/Users/{{ lookup('env', 'USER') }}/.asdf"
-        version: v0.8.1
-
     - name: Install nvm
       become: no
       shell: >
@@ -173,8 +172,13 @@
         echo 'bundler' >> "$(brew --prefix rbenv)/default-gems"
         echo 'gem: --no-document' >> ~/.gemrc
 
-    - name: Install yarn packages
-      shell: yarn global add {{ item }}
+    - name: Install npm packages
+      shell: npm i -g {{ item }}
       with_items:
-        - @angular/cli
         - typescript
+
+    - name: Install Lavarel
+      shell: composer global require laravel/valet && valet install
+
+    - name: Configure Valet
+      shell: valet use php@8.1
