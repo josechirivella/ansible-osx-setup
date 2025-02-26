@@ -25,15 +25,14 @@
         name: "{{ item }}"
       ignore_errors: yes
       with_items:
-        - 1password
-        - docker
         - figma
         - google-cloud-sdk
-        - iterm2
         - slack
         - visual-studio-code
         - vlc
         - zoom
+        - rectangle
+        - jetbrains-toolbox
 
     - name: "Install homebrew packages"
       community.general.homebrew:
@@ -45,7 +44,7 @@
           'gnu-time',
           'gpg',
           'htop',
-          'imagemagick@6',
+          'imagemagick',
           'libtool',
           'libxslt',
           'libyaml',
@@ -140,21 +139,16 @@
     #     - streetsidesoftware.code-spell-checker
     #     - fabiospampinato.vscode-todo-plus
 
-    - git:
-        repo: https://github.com/asdf-vm/asdf.git
-        dest: "/Users/{{ lookup('env', 'USER') }}/.asdf"
-        version: v0.8.1
-
     - name: Install nvm
       become: no
       shell: >
-        curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | bash
+        curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
       args:
         executable: /bin/bash
         chdir: "$HOME"
         creates: "$HOME/.nvm/nvm.sh"
 
-    - name: Install node
+    - name: Install node LTS
       become: no
       shell: >
         . {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm install {{ item }}
@@ -163,18 +157,22 @@
         chdir: "{{ ansible_env.HOME }}"
         creates: "{{ ansible_env.HOME }}/.nvm/versions/{{ item }}"
       loop:
-        - 16.15
+        - 22
 
     - name: "Install Default Ruby"
       shell: |
-        rbenv install 3.2.0
-        rbenv global 3.2.0
+        rbenv install 3.4.2
+        rbenv global 3.4.2
         gem install bundler
         echo 'bundler' >> "$(brew --prefix rbenv)/default-gems"
         echo 'gem: --no-document' >> ~/.gemrc
 
-    - name: Install yarn packages
-      shell: yarn global add {{ item }}
+    - name: Install pnpm
+      shell: |
+        curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+    - name: Install pnpm global packages
+      shell: pnpm add --global {{ item }}
       with_items:
-        - @angular/cli
+        - '@angular/cli'
         - typescript
