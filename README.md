@@ -4,6 +4,12 @@ This repository contains an Ansible configuration for setting up a Mac from scra
 
 ## Getting Started
 
+```bash
+wget https://github.com/josechirivella/ansible-osx-setup/archive/master.tar.gz
+# or
+curl https://github.com/josechirivella/ansible-osx-setup/archive/master.tar.gz
+```
+
 There's a simple shell script in `bin/bootstrap` which will perform the initial steps of:
 
 1. Installing Xcode
