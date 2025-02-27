@@ -53,6 +53,7 @@
           'mas',
           'openssl',
           'git',
+          'gh',
           'pkg-config',
           'rbenv',
           'ruby-build',
@@ -176,6 +177,7 @@
         echo 'gem: --no-document' >> ~/.gemrc
 
     - name: Install pnpm
+      become: true
       shell: |
         curl -fsSL https://get.pnpm.io/install.sh | sh -
 
