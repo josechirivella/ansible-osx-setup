@@ -34,6 +34,7 @@
         - orbstack
         - notion
         - notion-calendar
+        - font-jetbrains-mono
 
     - name: "Install homebrew packages"
       community.general.homebrew:
@@ -80,7 +81,6 @@
       become: true
       changed_when: true
       shell: sudo xcodebuild -license accept
-      
 
     - name: Get the path to ZSH
       become: false
@@ -165,6 +165,15 @@
         executable: /bin/bash
         chdir: "{{ ansible_env.HOME }}"
         creates: "{{ ansible_env.HOME }}/.nvm/versions/{{ item }}"
+      loop:
+        - 22
+    - name: Make node LTS the default
+      become: no
+      shell: >
+        . {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm use {{ item }} && nvm alias default {{ item }}
+      args:
+        executable: /bin/bash
+        chdir: "{{ ansible_env.HOME }}"
       loop:
         - 22
 
