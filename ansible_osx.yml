@@ -1,4 +1,3 @@
----
 - hosts: localhost
   tasks:
     - name: Install homebrew
@@ -13,26 +12,28 @@
       become: true
       become_user: root
 
-    - name: 'add custom homebrew repos'
-      community.general.homebrew_tap:
-        name: [
-          homebrew/cask-versions,
-          thoughtbot/formulae,
-        ]
-
     - name: Install core packages via brew casks
       community.general.homebrew_cask:
         name: "{{ item }}"
       ignore_errors: yes
       with_items:
+        - alfred
+        - vanilla
+        - rocket
+        - cleanmymac
         - figma
-        - google-cloud-sdk
+        - google-chrome
         - slack
         - visual-studio-code
+        - cursor
         - vlc
         - zoom
         - rectangle
         - jetbrains-toolbox
+        - warp
+        - orbstack
+        - notion
+        - notion-calendar
 
     - name: "Install homebrew packages"
       community.general.homebrew:
@@ -48,6 +49,7 @@
           'libtool',
           'libxslt',
           'libyaml',
+          'jq',
           'mas',
           'openssl',
           'git',
@@ -72,6 +74,12 @@
       shell: mas install {{ item }}
       with_items:
         - 497799835 # xcode
+
+    - name: Accept Xcode license
+      become: true
+      changed_when: true
+      shell: sudo xcodebuild -license accept
+      
 
     - name: Get the path to ZSH
       become: false
