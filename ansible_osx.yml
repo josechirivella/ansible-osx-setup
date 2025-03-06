@@ -35,12 +35,14 @@
         - notion
         - notion-calendar
         - font-jetbrains-mono
+        - postman
 
     - name: "Install homebrew packages"
       community.general.homebrew:
         name: [
           'autoconf',
           'automake',
+          'bat',
           'coreutils',
           'curl',
           'gnu-time',
@@ -65,7 +67,6 @@
           'tmux',
           'unzip',
           'vim',
-          'yarn',
           'zlib',
           'zsh',
         ]
