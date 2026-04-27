@@ -8,7 +8,7 @@
       ansible.builtin.lineinfile:
         path: /etc/paths
         state: present
-        line: '/opt/homebrew/bin'
+        line: "/opt/homebrew/bin"
       become: true
       become_user: root
 
@@ -39,37 +39,38 @@
 
     - name: "Install homebrew packages"
       community.general.homebrew:
-        name: [
-          'autoconf',
-          'automake',
-          'bat',
-          'coreutils',
-          'curl',
-          'gnu-time',
-          'gpg',
-          'htop',
-          'imagemagick',
-          'libtool',
-          'libxslt',
-          'libyaml',
-          'jq',
-          'mas',
-          'openssl',
-          'git',
-          'gh',
-          'pkg-config',
-          'rbenv',
-          'ruby-build',
-          'rbenv-default-gems',
-          'rbenv-gemset',
-          'readline',
-          'sqlite3',
-          'tmux',
-          'unzip',
-          'vim',
-          'zlib',
-          'zsh',
-        ]
+        name:
+          [
+            "autoconf",
+            "automake",
+            "bat",
+            "coreutils",
+            "curl",
+            "gnu-time",
+            "gpg",
+            "htop",
+            "imagemagick",
+            "libtool",
+            "libxslt",
+            "libyaml",
+            "jq",
+            "mas",
+            "openssl",
+            "git",
+            "gh",
+            "pkg-config",
+            "rbenv",
+            "ruby-build",
+            "rbenv-default-gems",
+            "rbenv-gemset",
+            "readline",
+            "sqlite3",
+            "tmux",
+            "unzip",
+            "vim",
+            "zlib",
+            "zsh",
+          ]
         state: present
         update_homebrew: yes
 
@@ -149,50 +150,28 @@
     #     - streetsidesoftware.code-spell-checker
     #     - fabiospampinato.vscode-todo-plus
 
-    - name: Install nvm
-      become: no
+    - name: Install mise
+      become: true
       shell: >
-        curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+        curl -fsSL https://mise.run/install.sh | sh
       args:
         executable: /bin/bash
-        chdir: "$HOME"
-        creates: "$HOME/.nvm/nvm.sh"
 
-    - name: Install node LTS
-      become: no
-      shell: >
-        . {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm install {{ item }}
-      args:
-        executable: /bin/bash
-        chdir: "{{ ansible_env.HOME }}"
-        creates: "{{ ansible_env.HOME }}/.nvm/versions/{{ item }}"
-      loop:
-        - 22
-    - name: Make node LTS the default
-      become: no
-      shell: >
-        . {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm use {{ item }} && nvm alias default {{ item }}
-      args:
-        executable: /bin/bash
-        chdir: "{{ ansible_env.HOME }}"
-      loop:
-        - 22
+    - name: Set ruby compiled setting to false
+      shell: mise config set ruby_compiled false
 
-    - name: "Install Default Ruby"
-      shell: |
-        rbenv install 3.4.2
-        rbenv global 3.4.2
-        gem install bundler
-        echo 'bundler' >> "$(brew --prefix rbenv)/default-gems"
-        echo 'gem: --no-document' >> ~/.gemrc
+    - name: Set mise as the default shell
+      shell: mise use -g {{ item }}
+      with_items:
+        - "node@24"
+        - "rust@latest"
+        - "ruby@latest"
 
     - name: Install pnpm
-      become: true
-      shell: |
-        curl -fsSL https://get.pnpm.io/install.sh | sh -
+      shell: curl -fsSL https://get.pnpm.io/install.sh | sh -
 
     - name: Install pnpm global packages
-      shell: pnpm add --global {{ item }}
+      shell: pnpm add -g {{ item }}
       with_items:
-        - '@angular/cli'
+        - "@angular/cli"
         - typescript
