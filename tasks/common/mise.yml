@@ -1,0 +1,17 @@
+---
+- name: Install mise
+  become: true
+  shell: >
+    curl -fsSL https://mise.run/install.sh | sh
+  args:
+    executable: /bin/bash
+
+- name: Set ruby compiled setting to false
+  shell: mise config set ruby_compiled false
+
+- name: Set global runtime versions via mise
+  shell: mise use -g {{ item }}
+  with_items:
+    - "node@24"
+    - "rust@latest"
+    - "ruby@latest"

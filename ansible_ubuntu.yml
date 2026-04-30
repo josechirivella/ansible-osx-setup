@@ -8,72 +8,36 @@
           - automake
           - coreutils
           - curl
-          - gnu-time
           - gpg
           - htop
-          - "imagemagick@6"
+          - imagemagick
           - libtool
-          - libxslt
-          - libyaml
+          - libxslt1-dev
+          - libyaml-dev
           - openssl
           - git
           - pkg-config
-          - rbenv
-          - ruby-build
-          - rbenv-default-gems
-          - rbenv-gemset
-          - readline
+          - readline-common
           - sqlite3
           - tmux
           - unzip
           - vim
-          - zlib
+          - zlib1g-dev
           - zsh
         state: latest
         update_cache: true
 
-    - name: Get the path to ZSH
-      become: false
-      local_action: command which zsh
-      register: zsh_path
+    - name: Setup ZSH and Oh My ZSH
+      import_tasks: tasks/common/zsh.yml
 
-    - name: "Ensure zsh is in allowed shells"
-      lineinfile:
-        path: /etc/shells
-        line: "{{ zsh_path.stdout }}"
-      become: true
+    - name: Setup mise
+      import_tasks: tasks/common/mise.yml
 
-    - name: Install Oh My ZSH
-      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-      args:
-        creates: "$HOME/{{ lookup('env', 'USER') }}/.oh-my-zsh"
+    - name: Setup pnpm
+      import_tasks: tasks/common/pnpm.yml
 
-    - name: Set ZSH as the default shell
-      shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
-      become: true
+    - name: Setup Docker
+      import_tasks: tasks/docker.yml
 
-    - name: Install mise
-      become: true
-      shell: >
-        curl -fsSL https://mise.run/install.sh | sh
-      args:
-        executable: /bin/bash
-
-    - name: Set ruby compiled setting to false
-      shell: mise config set ruby_compiled false
-
-    - name: Set mise as the default shell
-      shell: mise use -g {{ item }}
-      with_items:
-        - "node@24"
-        - "rust@latest"
-        - "ruby@latest"
-
-    - name: Install pnpm
-      shell: curl -fsSL https://get.pnpm.io/install.sh | sh -
-
-    - name: Install pnpm global packages
-      shell: pnpm add -g {{ item }}
-      with_items:
-        - "@angular/cli"
-        - typescript
+    - name: Setup Google Chrome
+      import_tasks: tasks/ubuntu/google-chrome.yml

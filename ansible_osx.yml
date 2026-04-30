@@ -59,10 +59,6 @@
             "git",
             "gh",
             "pkg-config",
-            "rbenv",
-            "ruby-build",
-            "rbenv-default-gems",
-            "rbenv-gemset",
             "readline",
             "sqlite3",
             "tmux",
@@ -84,94 +80,45 @@
       changed_when: true
       shell: sudo xcodebuild -license accept
 
-    - name: Get the path to ZSH
-      become: false
-      local_action: command which zsh
-      register: zsh_path
+    - name: Setup ZSH and Oh My ZSH
+      import_tasks: tasks/common/zsh.yml
 
-    - name: "Ensure homebrew zsh is in allowed shells"
-      lineinfile:
-        path: /etc/shells
-        line: "{{ zsh_path.stdout }}"
-      become: true
+    - name: Setup mise
+      import_tasks: tasks/common/mise.yml
 
-    - name: Install Oh My ZSH
-      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-      args:
-        creates: "/Users/{{ lookup('env', 'USER') }}/.oh-my-zsh"
+    - name: Setup pnpm
+      import_tasks: tasks/common/pnpm.yml
 
-    - name: Set ZSH as the default shell
-      shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
-      become: true
+    - name: Create a default ZSH configuration
+      template:
+        src: templates/.zshrc.j2
+        dest: /Users/{{ lookup('env', 'USER') }}/.zshrc
+        owner: "{{ lookup('env', 'USER') }}"
+        force: yes
 
-    # - name: "Create a default ZSH configuration"
-    #   template:
-    #     src: templates/.zshrc.j2
-    #     dest: /Users/{{ lookup('env', 'USER') }}/.zshrc
-    #     owner: "{{ lookup('env', 'USER') }}"
-    #     force: yes
+    - name: Create a default VSCode configuration
+      template:
+        src: templates/vscode-settings.json.j2
+        dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/settings.json
+        owner: "{{ lookup('env', 'USER') }}"
+        force: yes
 
-    # - name: Create a default VSCode configuration
-    #   template:
-    #     src: templates/vscode-settings.json.j2
-    #     dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/settings.json
-    #     owner: "{{ lookup('env', 'USER') }}"
-    #     force: yes
+    - name: Create a default VSCode keybinding configuration
+      template:
+        src: templates/vscode-keybindings.json.j2
+        dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/keybindings.json
+        owner: "{{ lookup('env', 'USER') }}"
+        force: yes
 
-    # - name: Create a default VSCode keuybinding configuration
-    #   template:
-    #     src: templates/vscode-keybindings.json.j2
-    #     dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/keybindings.json
-    #     owner: "{{ lookup('env', 'USER') }}"
-    #     force: yes
+    - name: Ensure .claude directory exists
+      file:
+        path: /Users/{{ lookup('env', 'USER') }}/.claude
+        state: directory
+        owner: "{{ lookup('env', 'USER') }}"
 
-    # Add something which ensures path is set here
-    # - name: Install VSCode extensions
-    #   shell: code --install-extension {{ item }}
-    #   with_items:
-    #     - apollographql.vscode-apollo
-    #     - bradlc.vscode-tailwindcss
-    #     - castwide.solargraph
-    #     - clinyong.vscode-css-modules
-    #     - eamodio.gitlens
-    #     - jakebecker.elixir-ls
-    #     - kaiwood.endwise
-    #     - karunamurti.haml
-    #     - ms-vscode-remote.vscode-remote-extensionpack
-    #     - ms-vscode.vscode-typescript-tslint-plugin
-    #     - msjsdiag.debugger-for-chrome
-    #     - rebornix.ruby
-    #     - richie5um2.vscode-sort-json
-    #     - Tyriar.sort-lines
-    #     - vscodevim.vim
-    #     - wholroyd.jinja
-    #     - wingrunr21.vscode-ruby
-    #     - xabikos.javascriptsnippets
-    #     - streetsidesoftware.code-spell-checker
-    #     - fabiospampinato.vscode-todo-plus
-
-    - name: Install mise
-      become: true
-      shell: >
-        curl -fsSL https://mise.run/install.sh | sh
-      args:
-        executable: /bin/bash
-
-    - name: Set ruby compiled setting to false
-      shell: mise config set ruby_compiled false
-
-    - name: Set mise as the default shell
-      shell: mise use -g {{ item }}
-      with_items:
-        - "node@24"
-        - "rust@latest"
-        - "ruby@latest"
-
-    - name: Install pnpm
-      shell: curl -fsSL https://get.pnpm.io/install.sh | sh -
-
-    - name: Install pnpm global packages
-      shell: pnpm add -g {{ item }}
-      with_items:
-        - "@angular/cli"
-        - typescript
+    - name: Create Claude Code settings
+      template:
+        src: templates/claude-settings.json.j2
+        dest: /Users/{{ lookup('env', 'USER') }}/.claude/settings.json
+        owner: "{{ lookup('env', 'USER') }}"
+        force: yes
