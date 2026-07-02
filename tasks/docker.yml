@@ -5,13 +5,13 @@
   apt:
     state: absent
     pkg:
-    - docker-ce
+      - docker-ce
 
 - name: Remove possible docker-compose installed from github
   # if installed from https://github.com/docker/compose/releases/download/
   become: true
   file:
-    path: '/usr/local/bin/docker-compose'
+    path: "/usr/local/bin/docker-compose"
     state: absent
 
 - name: Install Docker from Ubuntu APT
@@ -19,10 +19,10 @@
   apt:
     state: present
     pkg:
-    - runc
-    - containerd
-    - docker.io
-    - docker-compose
+      - runc
+      - containerd
+      - docker.io
+      - docker-compose
 
 - name: Allow running Docker without sudo
   become: true
@@ -36,16 +36,16 @@
 # With service module, when running in Docker in molecule
 # we get this error FAILED! =>
 # "msg": "Could not find the requested service docker: host"
-# with systemd module instead it works
+# with systemd module instead it workstrue
 - name: Do NOT enable service docker on boot
-  become: yes
+  become: true
   ansible.builtin.systemd:
     name: docker.service
     enabled: no
 
 # This way, as soon as we run a docker command docker.service starts
 - name: Enable docker.socket on boot
-  become: yes
+  become: true
   ansible.builtin.systemd:
     name: docker.socket
     enabled: yes
