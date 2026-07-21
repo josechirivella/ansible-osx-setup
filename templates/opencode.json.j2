@@ -1,0 +1,73 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "amazon-bedrock": {
+      "models": {
+        "anthropic.claude-opus-4-8": {
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 16000
+            }
+          }
+        },
+        "anthropic.claude-sonnet-5": {
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 16000
+            }
+          }
+        }
+      }
+    }
+  },
+	"plugin": ["@warp-dot-dev/opencode-warp"],
+  "model": "amazon-bedrock/anthropic.claude-opus-4-8",
+  "agent": {
+    "plan": {
+      "description": "Planning and analysis agent using Claude Opus 4.8 with extended thinking",
+      "mode": "primary",
+      "model": "amazon-bedrock/anthropic.claude-opus-4-8",
+      "temperature": 0.2,
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    "build": {
+      "description": "Build agent using Claude Sonnet 5 with extended thinking",
+      "mode": "primary",
+      "model": "amazon-bedrock/anthropic.claude-sonnet-5",
+      "prompt": "{file:./prompts/build.txt}",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "researcher": {
+      "description": "Research agent using Claude Opus 4.8 for deep analysis and documentation research",
+      "mode": "subagent",
+      "model": "amazon-bedrock/anthropic.claude-opus-4-8",
+      "temperature": 0.3,
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    "debugger": {
+      "description": "Debug and testing agent using Claude Sonnet 5 with extended thinking",
+      "mode": "subagent",
+      "model": "amazon-bedrock/anthropic.claude-sonnet-5",
+      "temperature": 0.3,
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  },
+}

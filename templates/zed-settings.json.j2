@@ -1,0 +1,363 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "auto_install_extensions": {
+    "angular": true,
+    "biome": true,
+    "caddyfile": true,
+    "catppuccin-icons": true,
+    "docker-compose": true,
+    "dockerfile": true,
+    "ember": true,
+    "emmet": true,
+    "html": true,
+    "jinja2": true,
+    "liquid": true,
+    "make": true,
+    "mcp-server-context7": true,
+    "oxc": true,
+    "ruby": true,
+    "scss": true,
+    "tokyo-night": true,
+    "vue": true,
+    "vue-snippets": true
+  },
+  "cli_default_open_behavior": "new_window",
+  "code_lens": "on",
+  "agent_servers": {
+    "cursor": {
+      "type": "registry"
+    },
+    "OpenCode Custom": {
+      "default_config_options": {
+        "mode": "plan"
+      },
+      "type": "custom",
+      "command": "opencode",
+      "args": ["acp"]
+    }
+  },
+  "project_panel": {
+    "dock": "right"
+  },
+  "outline_panel": {
+    "dock": "right"
+  },
+  "diff_view_style": "split",
+  "git_panel": {
+    "dock": "right",
+    "tree_view": true
+  },
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "codeActionOnSave": {
+          "rules": ["import/order"]
+        }
+      }
+    },
+    // Prefer "import type" over "import" when auto-importing type-only symbols
+    "typescript-language-server": {
+      "initialization_options": {
+        "preferences": {
+          "preferTypeOnlyAutoImports": true,
+          // Inlay hints — show parameter names, variable types, return types
+          "includeInlayParameterNameHints": "all",
+          "includeInlayParameterNameHintsWhenArgumentMatchesName": false,
+          "includeInlayFunctionParameterTypeHints": true,
+          "includeInlayVariableTypeHints": true,
+          "includeInlayPropertyDeclarationTypeHints": true,
+          "includeInlayFunctionLikeReturnTypeHints": true,
+          "includeInlayEnumMemberValueHints": true
+        }
+      }
+    }
+  },
+  "collaboration_panel": {
+    "dock": "right",
+    "button": false
+  },
+  "edit_predictions": {
+    "provider": "zed"
+  },
+  "document_symbols": "on",
+  "tabs": {
+    "file_icons": true,
+    "git_status": true
+  },
+  "close_on_file_delete": true,
+  "autosave": "on_focus_change",
+  "soft_wrap": "editor_width",
+  "show_signature_help_after_edits": true,
+  "double_click_in_multibuffer": "open",
+  "title_bar": {},
+  "colorize_brackets": true,
+  "minimap": {
+    "max_width_columns": 80,
+    "show": "auto"
+  },
+  "auto_signature_help": true,
+  "prettier": {
+    "allowed": true
+  },
+  "tab_size": 2,
+  "always_treat_brackets_as_autoclosed": false,
+  "preferred_line_length": 120,
+  "vim_mode": false,
+  "base_keymap": "JetBrains",
+  "diagnostics": {
+    "inline": {
+      "enabled": true
+    }
+  },
+  "icon_theme": "Catppuccin Frappé",
+  "agent": {
+    "dock": "left",
+    "tool_permissions": {
+      "default": "allow"
+    },
+    "default_profile": "write",
+    // Fallback model (used when no profile-specific model is set)
+    "default_model": {
+      "provider": "amazon-bedrock",
+      "model": "claude-sonnet-5",
+      "enable_thinking": true,
+      "effort": "high"
+    },
+    // Per-model temperature overrides.
+    // NOTE: Anthropic's extended thinking API requires temperature=1.
+    // Zed/Bedrock may silently ignore the 0.2 value when thinking is active
+    // on Opus 4.8. If you see API errors in plan mode, set it to 1.0.
+    "model_parameters": [
+      {
+        "provider": "amazon-bedrock",
+        "model": "claude-opus-4-8",
+        "temperature": 0.2
+      },
+      {
+        "provider": "amazon-bedrock",
+        "model": "claude-sonnet-5",
+        // 1.0 is suggested — required for extended thinking and good for generation
+        "temperature": 1.0
+      }
+    ],
+    "profiles": {
+      // Plan mode: Opus 4.8 with extended thinking + read-only tools.
+      // Uses 1M-token extended context (allow_extended_context is enabled in bedrock settings).
+      "plan": {
+        "name": "Plan",
+        "enable_all_context_servers": false,
+        "default_model": {
+          "provider": "amazon-bedrock",
+          "model": "claude-opus-4-8",
+          "enable_thinking": true,
+          "effort": "high"
+        },
+        "tools": {
+          "diagnostics": true,
+          "fetch": true,
+          "find_path": true,
+          "grep": true,
+          "list_directory": true,
+          "now": true,
+          "read_file": true,
+          "search_web": true,
+          "thinking": true,
+          "update_plan": true
+        }
+      },
+      // Write mode: Sonnet 5 with extended thinking + full toolset.
+      "write": {
+        "name": "Write",
+        "enable_all_context_servers": true,
+        "default_model": {
+          "provider": "amazon-bedrock",
+          "model": "claude-sonnet-5",
+          "enable_thinking": true,
+          "effort": "high"
+        },
+        "tools": {
+          "copy_path": true,
+          "create_directory": true,
+          "delete_path": true,
+          "diagnostics": true,
+          "edit_file": true,
+          "fetch": true,
+          "find_path": true,
+          "grep": true,
+          "list_directory": true,
+          "move_path": true,
+          "now": true,
+          "open": true,
+          "project_notifications": false,
+          "read_file": true,
+          "restore_file_from_disk": true,
+          "save_file": true,
+          "search_web": true,
+          "spawn_agent": true,
+          "terminal": true,
+          "thinking": true,
+          "update_plan": true
+        }
+      }
+    },
+    "inline_alternatives": [
+      {
+        "provider": "zed.dev",
+        "model": "claude-haiku-4-5"
+      }
+    ],
+    "commit_message_model": {
+      "provider": "amazon-bedrock",
+      "model": "claude-haiku-4-5"
+    },
+    "play_sound_when_agent_done": "when_hidden"
+  },
+  "context_servers": {
+    "chrome-devtools-mcp-zed": {
+      "enabled": false,
+      "settings": {}
+    },
+    "mcp-server-sequential-thinking": {
+      "enabled": false,
+      "settings": {}
+    },
+    "mcp-server-context7": {
+      "enabled": true,
+      "settings": {
+        "default_minimum_tokens": "10000"
+      }
+    }
+  },
+  "ui_font_size": 16,
+  "buffer_font_size": 16,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Tokyo Night"
+  },
+  "terminal": {
+    "font_family": "JetBrains Mono"
+  },
+  "lsp_highlight_debounce": 100,
+  "inlay_hints": {
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+    "show_other_hints": true,
+    "scroll_debounce_ms": 250
+  },
+  "languages": {
+    "JavaScript": {
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      },
+      "tab_size": 2,
+      "formatter": {
+        "external": {
+          "command": "prettier",
+          "arguments": ["--stdin-filepath", "{buffer_path}"]
+        }
+      }
+    },
+    "TypeScript": {
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+        // Automatically add missing imports (uses import type when possible)
+        "source.addMissingImports": true
+      },
+      "tab_size": 2,
+      "formatter": {
+        "external": {
+          "command": "prettier",
+          "arguments": ["--stdin-filepath", "{buffer_path}"]
+        }
+      }
+    },
+    "TSX": {
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+        // Automatically add missing imports (uses import type when possible)
+        "source.addMissingImports": true
+      },
+      "tab_size": 2,
+      "formatter": {
+        "external": {
+          "command": "prettier",
+          "arguments": ["--stdin-filepath", "{buffer_path}"]
+        }
+      }
+    },
+    "JSON": {
+      "tab_size": 2,
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      },
+      "formatter": {
+        "external": {
+          "command": "prettier",
+          "arguments": ["--stdin-filepath", "{buffer_path}"]
+        }
+      }
+    },
+    "JSONC": {
+      "tab_size": 2,
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      },
+      "formatter": {
+        "external": {
+          "command": "prettier",
+          "arguments": ["--stdin-filepath", "{buffer_path}"]
+        }
+      }
+    },
+    "Markdown": {
+      "format_on_save": "on",
+      "use_on_type_format": false,
+      "preferred_line_length": 80,
+      "soft_wrap": "preferred_line_length",
+      "prettier": {
+        "allowed": true
+      }
+    },
+    "SCSS": {
+      "tab_size": 2,
+      "code_actions_on_format": {
+        "source.fixAll.stylelint": true
+      },
+      "prettier": {
+        "allowed": true
+      }
+    },
+    "CSS": {
+      "tab_size": 2,
+      "code_actions_on_format": {
+        "source.fixAll.stylelint": true
+      },
+      "prettier": {
+        "allowed": true
+      }
+    },
+    "HTML": {
+      "prettier": {
+        "allowed": true
+      }
+    },
+    "YAML": {
+      "prettier": {
+        "allowed": true
+      }
+    },
+    "Diff": {
+      "remove_trailing_whitespace_on_save": false,
+      "ensure_final_newline_on_save": false
+    }
+  }
+}
