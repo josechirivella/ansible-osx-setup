@@ -1,34 +1,23 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "provider": {
-    "amazon-bedrock": {
-      "models": {
-        "anthropic.claude-opus-4-8": {
-          "options": {
-            "thinking": {
-              "type": "enabled",
-              "budgetTokens": 16000
-            }
-          }
-        },
-        "anthropic.claude-sonnet-5": {
-          "options": {
-            "thinking": {
-              "type": "enabled",
-              "budgetTokens": 16000
-            }
-          }
-        }
-      }
-    }
-  },
 	"plugin": ["@warp-dot-dev/opencode-warp"],
-  "model": "amazon-bedrock/anthropic.claude-opus-4-8",
+	"formatter": true,
+	"lsp": true,
+	"compaction": {
+    "auto": true,
+    "prune": false,
+    "reserved": 10000
+  },
+  "watcher": {
+    "ignore": ["node_modules/**", "dist/**", ".git/**", "coverage/**", "build/**"]
+  },
+  "model": "openai/gpt-5.6-sol",
+  "default_agent": "plan",
   "agent": {
     "plan": {
-      "description": "Planning and analysis agent using Claude Opus 4.8 with extended thinking",
+      "description": "Planning and analysis agent using OpenAI GPT-5.6 Sol",
       "mode": "primary",
-      "model": "amazon-bedrock/anthropic.claude-opus-4-8",
+      "model": "openai/gpt-5.6-sol",
       "temperature": 0.2,
       "tools": {
         "write": false,
@@ -37,9 +26,9 @@
       }
     },
     "build": {
-      "description": "Build agent using Claude Sonnet 5 with extended thinking",
+      "description": "Build agent using OpenAI GPT-5.6 Terra with High variant",
       "mode": "primary",
-      "model": "amazon-bedrock/anthropic.claude-sonnet-5",
+      "model": "openai/gpt-5.6-terra",
       "prompt": "{file:./prompts/build.txt}",
       "tools": {
         "write": true,
@@ -48,9 +37,9 @@
       }
     },
     "researcher": {
-      "description": "Research agent using Claude Opus 4.8 for deep analysis and documentation research",
+      "description": "Research agent using OpenAI GPT-5.6 Sol for deep analysis and documentation research",
       "mode": "subagent",
-      "model": "amazon-bedrock/anthropic.claude-opus-4-8",
+      "model": "openai/gpt-5.6-sol",
       "temperature": 0.3,
       "tools": {
         "write": false,
@@ -59,15 +48,26 @@
       }
     },
     "debugger": {
-      "description": "Debug and testing agent using Claude Sonnet 5 with extended thinking",
+      "description": "Debug and testing agent using OpenAI GPT-5.6 Terra with High variant",
       "mode": "subagent",
-      "model": "amazon-bedrock/anthropic.claude-sonnet-5",
+      "model": "openai/gpt-5.6-terra",
       "temperature": 0.3,
       "tools": {
         "write": true,
         "edit": true,
         "bash": true
       }
+    },
+    "code-reviewer": {
+      "description": "Code review agent using OpenAI GPT-5.6 Terra for code quality and best practices",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-terra",
+      "temperature": 0.5,
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
     }
-  },
+  }
 }
