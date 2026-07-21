@@ -7,6 +7,11 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "language_models": {
+    "opencode": {
+      "show_go_models": false
+    }
+  },
   "auto_install_extensions": {
     "angular": true,
     "biome": true,
@@ -125,8 +130,8 @@
     "default_profile": "write",
     // Fallback model (used when no profile-specific model is set)
     "default_model": {
-      "provider": "amazon-bedrock",
-      "model": "claude-sonnet-5",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
       "enable_thinking": true,
       "effort": "high"
     },
@@ -136,13 +141,13 @@
     // on Opus 4.8. If you see API errors in plan mode, set it to 1.0.
     "model_parameters": [
       {
-        "provider": "amazon-bedrock",
-        "model": "claude-opus-4-8",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
         "temperature": 0.2
       },
       {
-        "provider": "amazon-bedrock",
-        "model": "claude-sonnet-5",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
         // 1.0 is suggested — required for extended thinking and good for generation
         "temperature": 1.0
       }
@@ -154,8 +159,8 @@
         "name": "Plan",
         "enable_all_context_servers": false,
         "default_model": {
-          "provider": "amazon-bedrock",
-          "model": "claude-opus-4-8",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
           "enable_thinking": true,
           "effort": "high"
         },
@@ -177,8 +182,8 @@
         "name": "Write",
         "enable_all_context_servers": true,
         "default_model": {
-          "provider": "amazon-bedrock",
-          "model": "claude-sonnet-5",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
           "enable_thinking": true,
           "effort": "high"
         },
@@ -210,12 +215,12 @@
     "inline_alternatives": [
       {
         "provider": "zed.dev",
-        "model": "claude-haiku-4-5"
+        "model": "gpt-5.6-luna"
       }
     ],
     "commit_message_model": {
-      "provider": "amazon-bedrock",
-      "model": "claude-haiku-4-5"
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
     },
     "play_sound_when_agent_done": "when_hidden"
   },
@@ -231,7 +236,7 @@
     "mcp-server-context7": {
       "enabled": true,
       "settings": {
-        "default_minimum_tokens": "10000"
+        "context7_api_key": ""
       }
     }
   },
@@ -321,8 +326,8 @@
     "Markdown": {
       "format_on_save": "on",
       "use_on_type_format": false,
-      "preferred_line_length": 80,
-      "soft_wrap": "preferred_line_length",
+      "preferred_line_length": 100,
+      "soft_wrap": "editor_width",
       "prettier": {
         "allowed": true
       }
