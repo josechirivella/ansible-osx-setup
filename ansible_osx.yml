@@ -20,11 +20,9 @@
         - alfred
         - vanilla
         - rocket
-        - cleanmymac
         - figma
         - google-chrome
         - slack
-        - visual-studio-code
         - cursor
         - vlc
         - zoom
@@ -36,6 +34,11 @@
         - notion-calendar
         - font-jetbrains-mono
         - postman
+        - zed
+        - zen
+        - chatgpt
+        - claude
+        - istat-menus
 
     - name: "Install homebrew packages"
       community.general.homebrew:
@@ -70,15 +73,16 @@
         state: present
         update_homebrew: yes
 
-    - name: "Install from Mac app store"
-      shell: mas install {{ item }}
-      with_items:
-        - 497799835 # xcode
+    - name: Check whether full Xcode is installed
+      stat:
+        path: /Applications/Xcode.app
+      register: xcode_app
 
     - name: Accept Xcode license
       become: true
+      command: xcodebuild -license accept
+      when: xcode_app.stat.exists
       changed_when: true
-      shell: sudo xcodebuild -license accept
 
     - name: Setup ZSH and Oh My ZSH
       import_tasks: tasks/common/zsh.yml
@@ -96,20 +100,6 @@
         owner: "{{ lookup('env', 'USER') }}"
         force: yes
 
-    - name: Create a default VSCode configuration
-      template:
-        src: templates/vscode-settings.json.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/settings.json
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
-
-    - name: Create a default VSCode keybinding configuration
-      template:
-        src: templates/vscode-keybindings.json.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/keybindings.json
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
-
     - name: Ensure .claude directory exists
       file:
         path: /Users/{{ lookup('env', 'USER') }}/.claude
@@ -120,5 +110,31 @@
       template:
         src: templates/claude-settings.json.j2
         dest: /Users/{{ lookup('env', 'USER') }}/.claude/settings.json
+        owner: "{{ lookup('env', 'USER') }}"
+        force: yes
+
+    - name: Ensure OpenCode config directory exists
+      file:
+        path: /Users/{{ lookup('env', 'USER') }}/.config/opencode
+        state: directory
+        owner: "{{ lookup('env', 'USER') }}"
+
+    - name: Create OpenCode settings
+      template:
+        src: templates/opencode.json.j2
+        dest: /Users/{{ lookup('env', 'USER') }}/.config/opencode/opencode.json
+        owner: "{{ lookup('env', 'USER') }}"
+        force: yes
+
+    - name: Ensure Zed config directory exists
+      file:
+        path: /Users/{{ lookup('env', 'USER') }}/.config/zed
+        state: directory
+        owner: "{{ lookup('env', 'USER') }}"
+
+    - name: Create Zed settings
+      template:
+        src: templates/zed-settings.json.j2
+        dest: /Users/{{ lookup('env', 'USER') }}/.config/zed/settings.json
         owner: "{{ lookup('env', 'USER') }}"
         force: yes
