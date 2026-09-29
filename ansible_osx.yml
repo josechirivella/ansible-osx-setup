@@ -15,6 +15,7 @@
     - name: Install core packages via brew casks
       community.general.homebrew_cask:
         name: "{{ item }}"
+        install_options: adopt
       ignore_errors: yes
       with_items:
         - alfred
@@ -39,6 +40,7 @@
         - chatgpt
         - claude
         - istat-menus
+        - google-cloud-sdk
 
     - name: "Install homebrew packages"
       community.general.homebrew:
@@ -73,6 +75,19 @@
         state: present
         update_homebrew: yes
 
+    - name: Add Homebrew taps
+      community.general.homebrew_tap:
+        name: hashicorp/tap
+        state: present
+
+    - name: Install development tools via homebrew
+      community.general.homebrew:
+        name:
+          - hashicorp/tap/terraform
+          - postgresql@18
+          - php
+        state: present
+
     - name: Check whether full Xcode is installed
       stat:
         path: /Applications/Xcode.app
@@ -92,6 +107,15 @@
 
     - name: Setup pnpm
       import_tasks: tasks/common/pnpm.yml
+
+    - name: Setup Claude Code
+      import_tasks: tasks/common/claude-code.yml
+
+    - name: Setup OpenCode
+      import_tasks: tasks/common/opencode.yml
+
+    - name: Setup bun
+      import_tasks: tasks/common/bun.yml
 
     - name: Create a default ZSH configuration
       template:
