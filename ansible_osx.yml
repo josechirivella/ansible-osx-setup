@@ -19,7 +19,7 @@
       ignore_errors: yes
       with_items:
         - alfred
-        - vanilla
+        - bartender
         - rocket
         - figma
         - google-chrome
@@ -39,8 +39,9 @@
         - zen
         - chatgpt
         - claude
-        - istat-menus
-        - google-cloud-sdk
+        - stats
+        - gcloud-cli
+        - grammarly-desktop
 
     - name: "Install homebrew packages"
       community.general.homebrew:
