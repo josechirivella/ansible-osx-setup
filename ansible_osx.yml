@@ -1,16 +1,12 @@
 - hosts: localhost
+  vars:
+    # Run modules on Ansible's own Python, not the outdated system python3
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    dotfiles_dir: /Users/{{ lookup('env', 'USER') }}/MyTerminalConfig
   tasks:
     - name: Install homebrew
       include_role:
         name: geerlingguy.mac.homebrew
-
-    - name: Make sure homebrew bin is in path
-      ansible.builtin.lineinfile:
-        path: /etc/paths
-        state: present
-        line: "/opt/homebrew/bin"
-      become: true
-      become_user: root
 
     - name: Install core packages via brew casks
       community.general.homebrew_cask:
@@ -119,12 +115,23 @@
     - name: Setup bun
       import_tasks: tasks/common/bun.yml
 
-    - name: Create a default ZSH configuration
-      template:
-        src: templates/.zshrc.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/.zshrc
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
+    - name: Clone dotfiles
+      git:
+        repo: https://github.com/josechirivella/dotfiles.git
+        dest: "{{ dotfiles_dir }}"
+        update: no
+
+    - name: Check whether .zshrc already points at the dotfiles
+      stat:
+        path: /Users/{{ lookup('env', 'USER') }}/.zshrc
+      register: zshrc
+
+    # install.sh re-links .zshrc on every run, so only run it until it's linked
+    - name: Install dotfiles
+      command: sh src/install.sh
+      args:
+        chdir: "{{ dotfiles_dir }}"
+      when: zshrc.stat.lnk_source | default('') != dotfiles_dir ~ '/.zshrc'
 
     - name: Ensure .claude directory exists
       file:

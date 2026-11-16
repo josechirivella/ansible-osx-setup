@@ -1,10 +1,34 @@
 #!/bin/sh
-xcode-select --install
-sudo xcodebuild -license
-/usr/sbin/softwareupdate --install-rosetta
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python3 get-pip.py
-sudo pip3 install --ignore-installed ansible
+set -e
+cd "$(dirname "$0")/.."
+
+# Homebrew (and so most of this setup) needs an Administrator account
+if ! id -Gn | tr ' ' '\n' | grep -qx admin; then
+  echo "$USER is not an Administrator. Homebrew needs admin rights to install;" >&2
+  echo "ask IT for (temporary) admin access and re-run bin/bootstrap." >&2
+  exit 1
+fi
+
+# Xcode Command Line Tools (opens a GUI installer, so wait for it to finish)
+if ! xcode-select -p >/dev/null 2>&1; then
+  xcode-select --install
+  echo "Waiting for the Command Line Tools install to finish..."
+  until xcode-select -p >/dev/null 2>&1; do sleep 5; done
+fi
+
+# Rosetta, Apple Silicon only
+if [ "$(uname -m)" = "arm64" ] && ! /usr/bin/pgrep -q oahd; then
+  sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+fi
+
+# Homebrew
+if [ ! -x /opt/homebrew/bin/brew ]; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Ansible from Homebrew ships its own Python; the system python3 is too old
+brew install ansible
 ansible-galaxy install -r requirements.yml
 
 ansible-playbook -i "localhost," -c local ansible_osx.yml --ask-become-pass
