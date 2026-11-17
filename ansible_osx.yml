@@ -6,6 +6,10 @@
     # Prefer the login environment's home, then the passwd home. Avoids a
     # hardcoded /Users/$USER path when USER is unset or the home directory differs.
     user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
+    # Opt in to disable Spotlight on every volume. Indexing is turned off
+    # (mdutil -a -i off), then Spotlight activity is disabled (mdutil -a -d).
+    # The index is not erased. Re-enable with: sudo mdutil -a -i on
+    osx_disable_spotlight: false
   tasks:
     - name: Install homebrew
       include_role:
@@ -100,6 +104,9 @@
       command: xcodebuild -license accept
       when: xcode_app.stat.exists
       changed_when: true
+
+    - name: Disable Spotlight
+      import_tasks: tasks/osx/spotlight.yml
 
     - name: Setup ZSH and Oh My ZSH
       import_tasks: tasks/common/zsh.yml

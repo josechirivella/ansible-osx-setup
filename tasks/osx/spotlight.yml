@@ -1,0 +1,108 @@
+---
+# mdutil -a -i off only stops indexing. The volume status becomes
+# "Indexing disabled." and Spotlight can still search the existing index.
+# mdutil -a -d disables Spotlight activity (indexing and searching). The
+# status becomes "Indexing and searching disabled."
+#
+# The mdutil usage text re-enables -d with -i on. -E erases the metadata
+# store and rebuilds it when indexing is on, so the index is left in place.
+# Turn Spotlight back on with: sudo mdutil -a -i on
+
+- name: Disable Spotlight when osx_disable_spotlight is true
+  when: osx_disable_spotlight | default(false) | bool
+  block:
+    - name: Check Spotlight status on all volumes
+      become: true
+      command: mdutil -a -s
+      register: spotlight_status
+      changed_when: false
+      failed_when: >-
+        spotlight_status.rc != 0
+        and 'Indexing' not in (spotlight_status.stdout | default(''))
+        and 'disabled' not in (spotlight_status.stdout | default(''))
+
+    # Keep the last status line for each volume. mdutil prints:
+    #   /System/Volumes/Data:
+    #       Indexing enabled.
+    - name: Parse Spotlight status by volume
+      set_fact:
+        spotlight_current_volume: "{{ item[:-1] if item is match('\\S.*:$') else (spotlight_current_volume | default('')) }}"
+        spotlight_volumes: >-
+          {{
+            (item is match('\S.*:$') or (item | trim | length == 0))
+            | ternary(
+                spotlight_volumes | default([]),
+                (
+                  spotlight_volumes | default([])
+                  | rejectattr('path', 'equalto', spotlight_current_volume | default(''))
+                  | list
+                ) + [{'path': spotlight_current_volume | default(''), 'status': item | trim}]
+              )
+          }}
+      loop: "{{ spotlight_status.stdout_lines | default([]) }}"
+      loop_control:
+        label: "{{ item | trim | default('(blank)', true) }}"
+      changed_when: false
+
+    - name: Fail when Spotlight status cannot be parsed
+      fail:
+        msg: >-
+          mdutil -a -s did not report a per-volume Spotlight status, so
+          indexing was left unchanged.
+      when: spotlight_volumes | default([]) | length == 0
+
+    - name: Record whether Spotlight indexing or searching is still on
+      set_fact:
+        spotlight_indexing_enabled: >-
+          {{
+            spotlight_volumes
+            | rejectattr('path', 'equalto', '')
+            | selectattr('status', 'search', 'Indexing enabled')
+            | list
+            | length > 0
+          }}
+        spotlight_activity_enabled: >-
+          {{
+            (
+              spotlight_volumes
+              | rejectattr('path', 'equalto', '')
+              | selectattr('status', 'search', 'Indexing enabled')
+              | list
+              | length > 0
+            )
+            or
+            (
+              spotlight_volumes
+              | rejectattr('path', 'equalto', '')
+              | rejectattr('path', 'match', '^/System/Volumes/(Preboot|Recovery|Update|VM|xarts|iSCPreboot|Hardware)(/|$)')
+              | selectattr('status', 'search', 'Indexing disabled[.]')
+              | list
+              | length > 0
+            )
+          }}
+      changed_when: false
+
+    - name: Turn off Spotlight indexing on all volumes
+      become: true
+      command: mdutil -a -i off
+      when: spotlight_indexing_enabled | bool
+      register: spotlight_index_off
+      changed_when: >-
+        'Indexing disabled' in ((spotlight_index_off.stdout | default('')) ~ (spotlight_index_off.stderr | default('')))
+        or 'searching disabled' in ((spotlight_index_off.stdout | default('')) ~ (spotlight_index_off.stderr | default('')))
+      failed_when: >-
+        spotlight_index_off.rc != 0
+        and 'Indexing disabled' not in ((spotlight_index_off.stdout | default('')) ~ (spotlight_index_off.stderr | default('')))
+        and 'searching disabled' not in ((spotlight_index_off.stdout | default('')) ~ (spotlight_index_off.stderr | default('')))
+
+    - name: Disable Spotlight activity on all volumes
+      become: true
+      command: mdutil -a -d
+      when: spotlight_activity_enabled | bool
+      register: spotlight_activity
+      changed_when: >-
+        'searching disabled' in ((spotlight_activity.stdout | default('')) ~ (spotlight_activity.stderr | default('')))
+      failed_when: >-
+        spotlight_activity.rc != 0
+        and 'searching disabled' not in ((spotlight_activity.stdout | default('')) ~ (spotlight_activity.stderr | default('')))
+        and 'Indexing disabled' not in ((spotlight_activity.stdout | default('')) ~ (spotlight_activity.stderr | default('')))

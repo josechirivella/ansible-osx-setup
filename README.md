@@ -38,3 +38,15 @@ The easiest way to understand what's installed is to read the contents of `ansib
 
 Everything can be customised by editing `ansible_osx.yml`.
 
+### Spotlight
+
+Spotlight stays enabled unless `osx_disable_spotlight` is set to `true` in `ansible_osx.yml`. The default is `false`.
+
+When it is `true`, the playbook checks `mdutil -a -s` and, only if Spotlight is still active, turns indexing off on every volume (`sudo mdutil -a -i off`) and then disables Spotlight activity (`sudo mdutil -a -d`). `-i off` stops indexing but leaves searching available. `-d` stops both indexing and searching. The existing index is not erased.
+
+Turn Spotlight back on with:
+
+```bash
+sudo mdutil -a -i on
+```
+
