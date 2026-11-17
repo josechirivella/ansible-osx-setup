@@ -1,5 +1,9 @@
 ---
 - hosts: localhost
+  vars:
+    # Prefer the login environment's home, then the passwd home. Same
+    # definition as the macOS playbook so common tasks can use user_home.
+    user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
   tasks:
     - name: Update apt and install required system packages
       apt:

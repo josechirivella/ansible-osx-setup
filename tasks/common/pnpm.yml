@@ -2,13 +2,13 @@
 - name: Install pnpm
   shell: curl -fsSL https://get.pnpm.io/install.sh | sh -
   args:
-    creates: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}/Library/pnpm"
+    creates: "{{ user_home }}/Library/pnpm"
 
 - name: Install pnpm global packages
-  command: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}/Library/pnpm/bin/pnpm add -g {{ item }}"
+  command: "{{ user_home }}/Library/pnpm/bin/pnpm add -g {{ item }}"
   environment:
-    PNPM_HOME: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}/Library/pnpm"
-    PATH: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}/Library/pnpm/bin:{{ ansible_facts['env']['PATH'] }}"
+    PNPM_HOME: "{{ user_home }}/Library/pnpm"
+    PATH: "{{ user_home }}/Library/pnpm/bin:{{ ansible_facts['env']['PATH'] }}"
   with_items:
     - "@angular/cli"
     - typescript
