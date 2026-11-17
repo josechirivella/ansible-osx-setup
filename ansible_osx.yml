@@ -3,6 +3,9 @@
     # Run modules on Ansible's own Python, not the outdated system python3
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
     dotfiles_dir: /Users/{{ lookup('env', 'USER') }}/MyTerminalConfig
+    # Prefer the login environment's home, then the passwd home. Avoids a
+    # hardcoded /Users/$USER path when USER is unset or the home directory differs.
+    user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
   tasks:
     - name: Install homebrew
       include_role:
@@ -22,6 +25,7 @@
         - slack
         - cursor
         - vlc
+        - spotify
         - zoom
         - rectangle
         - jetbrains-toolbox
@@ -133,31 +137,42 @@
         chdir: "{{ dotfiles_dir }}"
       when: zshrc.stat.lnk_source | default('') != dotfiles_dir ~ '/.zshrc'
 
+    # Explicit 0700: unset mode follows Ansible's default, which changed across
+    # releases and can create a directory without the execute bit. The template
+    # task then fails because it cannot write inside that directory.
     - name: Ensure .claude directory exists
       file:
-        path: /Users/{{ lookup('env', 'USER') }}/.claude
+        path: "{{ user_home }}/.claude"
         state: directory
-        owner: "{{ lookup('env', 'USER') }}"
+        owner: "{{ ansible_facts['user_id'] }}"
+        mode: "0700"
 
     - name: Create Claude Code settings
       template:
         src: templates/claude-settings.json.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/.claude/settings.json
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
+        dest: "{{ user_home }}/.claude/settings.json"
+        owner: "{{ ansible_facts['user_id'] }}"
+        mode: "0600"
+        force: true
+        validate: "{{ ansible_playbook_python }} -m json.tool %s"
 
+    # Creating the nested directory with a mode also creates missing parents
+    # (~/.config) with that mode, so .config stays traversable.
     - name: Ensure OpenCode config directory exists
       file:
-        path: /Users/{{ lookup('env', 'USER') }}/.config/opencode
+        path: "{{ user_home }}/.config/opencode"
         state: directory
-        owner: "{{ lookup('env', 'USER') }}"
+        owner: "{{ ansible_facts['user_id'] }}"
+        mode: "0700"
 
     - name: Create OpenCode settings
       template:
         src: templates/opencode.json.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/.config/opencode/opencode.json
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
+        dest: "{{ user_home }}/.config/opencode/opencode.json"
+        owner: "{{ ansible_facts['user_id'] }}"
+        mode: "0600"
+        force: true
+        validate: "{{ ansible_playbook_python }} -m json.tool %s"
 
     - name: Ensure Zed config directory exists
       file:
