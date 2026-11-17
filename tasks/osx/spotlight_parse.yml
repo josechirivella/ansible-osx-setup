@@ -1,0 +1,31 @@
+---
+# mdutil prints one volume, then one or more indented status lines:
+#   /System/Volumes/Data:
+#       Indexing enabled.
+# The last status line for a volume is the one that counts.
+
+- name: Reset the parsed Spotlight volume list
+  set_fact:
+    spotlight_parsed_volumes: []
+    spotlight_parse_volume: ""
+  changed_when: false
+
+- name: Parse Spotlight status lines
+  set_fact:
+    spotlight_parse_volume: "{{ item[:-1] if item is match('\\S.*:$') else spotlight_parse_volume }}"
+    spotlight_parsed_volumes: >-
+      {{
+        (item is match('\S.*:$') or (item | trim | length == 0))
+        | ternary(
+            spotlight_parsed_volumes,
+            (
+              spotlight_parsed_volumes
+              | rejectattr('path', 'equalto', spotlight_parse_volume)
+              | list
+            ) + [{'path': spotlight_parse_volume, 'status': item | trim}]
+          )
+      }}
+  loop: "{{ (spotlight_status_text | default('')).split('\n') }}"
+  loop_control:
+    label: "{{ item | trim | default('(blank)', true) }}"
+  changed_when: false

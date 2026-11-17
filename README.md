@@ -42,7 +42,7 @@ Everything can be customised by editing `ansible_osx.yml`.
 
 Spotlight stays enabled unless `osx_disable_spotlight` is set to `true` in `ansible_osx.yml`. The default is `false`.
 
-When it is `true`, the playbook checks `mdutil -a -s` and, only if Spotlight is still active, turns indexing off on every volume (`sudo mdutil -a -i off`) and then disables Spotlight activity (`sudo mdutil -a -d`). `-i off` stops indexing but leaves searching available. `-d` stops both indexing and searching. The existing index is not erased.
+When it is `true`, the playbook checks `mdutil -a -s`. It turns indexing off only on volumes that report `Indexing enabled.` (`mdutil -i off <volume>`), then disables Spotlight activity only on volumes that are not already fully disabled (`mdutil -d <volume>`). `-i off` stops indexing but leaves searching available. `-d` stops both indexing and searching. A second `mdutil -a -s` decides whether anything changed, so a volume that stays `Indexing disabled.` does not mark the run as changed. Volumes that are already fully disabled are left alone. The existing index is not erased.
 
 Turn Spotlight back on with:
 

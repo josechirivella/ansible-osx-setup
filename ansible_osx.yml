@@ -6,9 +6,10 @@
     # Prefer the login environment's home, then the passwd home. Avoids a
     # hardcoded /Users/$USER path when USER is unset or the home directory differs.
     user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
-    # Opt in to disable Spotlight on every volume. Indexing is turned off
-    # (mdutil -a -i off), then Spotlight activity is disabled (mdutil -a -d).
-    # The index is not erased. Re-enable with: sudo mdutil -a -i on
+    # Opt in to disable Spotlight per volume that is still active.
+    # Indexing-on volumes get `mdutil -i off`, then those and any volume still
+    # at "Indexing disabled." get `mdutil -d`. The index is not erased.
+    # Re-enable with: sudo mdutil -a -i on
     osx_disable_spotlight: false
   tasks:
     - name: Install homebrew
