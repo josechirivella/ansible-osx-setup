@@ -6,7 +6,64 @@
     # hardcoded /Users/$USER path when USER is unset or the home directory differs.
     user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
     dotfiles_dir: "{{ user_home }}/MyTerminalConfig"
+    # Opt-in. Spotlight stays on unless this is true.
+    # `mdutil -a -d` sets kMDConfigSearchLevelOff: indexing and searching both stop.
+    # `-i off` is not used. On its own it leaves search on, and `mdutil -a -i off`
+    # turns search back on for volumes already at "Indexing and searching disabled."
+    # `-E` erases the index, so it is not used.
+    # Re-enable with: sudo mdutil -a -i on
+    osx_disable_spotlight: false
   tasks:
+    # Before Homebrew, so indexing is off for the rest of the install.
+    - name: Disable Spotlight
+      become: true
+      when: osx_disable_spotlight | bool
+      vars:
+        spotlight_disabled_status: Indexing and searching disabled
+      block:
+        - name: Check Spotlight status on all volumes
+          command: mdutil -a -s
+          register: spotlight_status
+          changed_when: false
+          failed_when: spotlight_status.rc != 0
+
+        # One phrase. Any other indexing line, including ones that do not match
+        # "Indexing enabled." exactly, still needs disabling.
+        - name: Record whether every Spotlight volume is already disabled
+          set_fact:
+            spotlight_fully_disabled: >-
+              {{ (status_lines | length) > 0
+                 and (status_lines
+                      | reject('match', '^' ~ spotlight_disabled_status)
+                      | list | length) == 0 }}
+          vars:
+            status_lines: >-
+              {{ spotlight_status.stdout_lines | map('trim')
+                 | select('search', 'Indexing') | list }}
+          changed_when: false
+
+        - name: Disable Spotlight indexing and searching
+          command: mdutil -a -d
+          when: not (spotlight_fully_disabled | bool)
+          register: spotlight_disable
+          changed_when: spotlight_disable.rc == 0
+          failed_when: spotlight_disable.rc != 0
+
+        - name: Re-check Spotlight status after disabling it
+          command: mdutil -a -s
+          when: not (spotlight_fully_disabled | bool)
+          register: spotlight_status_after
+          changed_when: false
+          failed_when: >-
+            spotlight_status_after.rc != 0
+            or (after_lines | reject('match', '^' ~ spotlight_disabled_status)
+                | list | length) > 0
+            or (after_lines | length) == 0
+          vars:
+            after_lines: >-
+              {{ spotlight_status_after.stdout_lines | default([]) | map('trim')
+                 | select('search', 'Indexing') | list }}
+
     - name: Install homebrew
       include_role:
         name: geerlingguy.mac.homebrew
