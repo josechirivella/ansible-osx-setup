@@ -6,13 +6,13 @@
     # hardcoded /Users/$USER path when USER is unset or the home directory differs.
     user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
     dotfiles_dir: "{{ user_home }}/MyTerminalConfig"
-    # Opt-in. Spotlight stays on unless this is true.
+    # Default on: Alfred replaces Spotlight search. Set this to false to keep Spotlight.
     # `mdutil -a -d` sets kMDConfigSearchLevelOff: indexing and searching both stop.
     # `-i off` is not used. On its own it leaves search on, and `mdutil -a -i off`
     # turns search back on for volumes already at "Indexing and searching disabled."
     # `-E` erases the index, so it is not used.
     # Re-enable with: sudo mdutil -a -i on
-    osx_disable_spotlight: false
+    osx_disable_spotlight: true
   tasks:
     # Before Homebrew, so indexing is off for the rest of the install.
     - name: Disable Spotlight
