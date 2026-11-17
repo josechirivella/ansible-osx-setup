@@ -6,6 +6,11 @@
     # Prefer the login environment's home, then the passwd home. Avoids a
     # hardcoded /Users/$USER path when USER is unset or the home directory differs.
     user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
+    # Opt-in. Spotlight stays on unless this is true.
+    # `mdutil -i off` stops indexing but leaves the existing index searchable.
+    # `mdutil -d` disables searching as well. `-E` is not used: it erases the index.
+    # Re-enable with: sudo mdutil -a -i on
+    osx_disable_spotlight: false
   tasks:
     - name: Install homebrew
       include_role:
@@ -100,6 +105,50 @@
       command: xcodebuild -license accept
       when: xcode_app.stat.exists
       changed_when: true
+
+    # "Indexing enabled." is on. "Indexing disabled." is -i off (search still works).
+    # "Indexing and searching disabled." is the steady state after -d.
+    # -i off runs first; -d runs last so searching stays off.
+    - name: Disable Spotlight
+      become: true
+      when: osx_disable_spotlight | bool
+      block:
+        - name: Check Spotlight status on all volumes
+          command: mdutil -a -s
+          register: spotlight_status
+          changed_when: false
+          failed_when: "'Indexing' not in (spotlight_status.stdout | default(''))"
+
+        - name: Record Spotlight volumes that are still active
+          set_fact:
+            spotlight_indexing_enabled: >-
+              {{ spotlight_status.stdout_lines | map('trim')
+                 | select('in', ['Indexing enabled.', 'Indexing enabled'])
+                 | list | length > 0 }}
+            spotlight_not_fully_disabled: >-
+              {{ spotlight_status.stdout_lines | map('trim')
+                 | select('in', [
+                     'Indexing enabled.',
+                     'Indexing enabled',
+                     'Indexing disabled.',
+                     'Indexing disabled'
+                   ])
+                 | list | length > 0 }}
+          changed_when: false
+
+        - name: Turn Spotlight indexing off on all volumes
+          command: mdutil -a -i off
+          when: spotlight_indexing_enabled | bool
+          register: spotlight_index_off
+          changed_when: "'Indexing disabled' in spotlight_index_off.stdout"
+          failed_when: spotlight_index_off.rc != 0 and 'disabled' not in (spotlight_index_off.stdout | default(''))
+
+        - name: Disable Spotlight searching on all volumes
+          command: mdutil -a -d
+          when: spotlight_not_fully_disabled | bool
+          register: spotlight_search_off
+          changed_when: "'Indexing and searching disabled' in spotlight_search_off.stdout"
+          failed_when: spotlight_search_off.rc != 0 and 'Indexing and searching disabled' not in (spotlight_search_off.stdout | default(''))
 
     - name: Setup ZSH and Oh My ZSH
       import_tasks: tasks/common/zsh.yml
