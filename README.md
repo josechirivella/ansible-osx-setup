@@ -40,7 +40,7 @@ Everything can be customised by editing `ansible_osx.yml`.
 
 ## Spotlight
 
-Spotlight stays enabled unless `osx_disable_spotlight` is set to `true` in `ansible_osx.yml`. The default is `false`.
+Spotlight is disabled by default (`osx_disable_spotlight: true` in `ansible_osx.yml`) because Alfred is the search tool. Set `osx_disable_spotlight: false` to keep Spotlight.
 
 When that variable is true, the playbook reads `mdutil -a -s` before the other installs. If every volume already reports `Indexing and searching disabled.`, nothing is changed. Otherwise it runs `mdutil -a -d`, which disables indexing and searching on every volume, then reads `mdutil -a -s` again and requires that same status.
 
