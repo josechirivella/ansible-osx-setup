@@ -2,10 +2,10 @@
   vars:
     # Run modules on Ansible's own Python, not the outdated system python3
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
-    dotfiles_dir: /Users/{{ lookup('env', 'USER') }}/MyTerminalConfig
     # Prefer the login environment's home, then the passwd home. Avoids a
     # hardcoded /Users/$USER path when USER is unset or the home directory differs.
     user_home: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}"
+    dotfiles_dir: "{{ user_home }}/MyTerminalConfig"
   tasks:
     - name: Install homebrew
       include_role:
@@ -127,7 +127,7 @@
 
     - name: Check whether .zshrc already points at the dotfiles
       stat:
-        path: /Users/{{ lookup('env', 'USER') }}/.zshrc
+        path: "{{ user_home }}/.zshrc"
       register: zshrc
 
     # install.sh re-links .zshrc on every run, so only run it until it's linked
@@ -147,6 +147,7 @@
         owner: "{{ ansible_facts['user_id'] }}"
         mode: "0700"
 
+    # force replaces hand edits on re-run so the file matches this repo (previous behavior).
     - name: Create Claude Code settings
       template:
         src: templates/claude-settings.json.j2
@@ -156,8 +157,16 @@
         force: true
         validate: "{{ ansible_playbook_python }} -m json.tool %s"
 
-    # Creating the nested directory with a mode also creates missing parents
-    # (~/.config) with that mode, so .config stays traversable.
+    # ~/.config is shared. Create it as 0755 so a missing parent does not
+    # inherit 0700 from the opencode directory (Ansible applies that mode to
+    # parents it creates). 0755 still has the execute bit.
+    - name: Ensure .config directory exists
+      file:
+        path: "{{ user_home }}/.config"
+        state: directory
+        owner: "{{ ansible_facts['user_id'] }}"
+        mode: "0755"
+
     - name: Ensure OpenCode config directory exists
       file:
         path: "{{ user_home }}/.config/opencode"
@@ -165,6 +174,7 @@
         owner: "{{ ansible_facts['user_id'] }}"
         mode: "0700"
 
+    # force replaces hand edits on re-run so the file matches this repo (previous behavior).
     - name: Create OpenCode settings
       template:
         src: templates/opencode.json.j2
@@ -176,13 +186,17 @@
 
     - name: Ensure Zed config directory exists
       file:
-        path: /Users/{{ lookup('env', 'USER') }}/.config/zed
+        path: "{{ user_home }}/.config/zed"
         state: directory
-        owner: "{{ lookup('env', 'USER') }}"
+        owner: "{{ ansible_facts['user_id'] }}"
+        mode: "0755"
 
+    # JSONC (// comments), so this is not validated with json.tool.
+    # force replaces hand edits on re-run so the file matches this repo (previous behavior).
     - name: Create Zed settings
       template:
         src: templates/zed-settings.json.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/.config/zed/settings.json
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
+        dest: "{{ user_home }}/.config/zed/settings.json"
+        owner: "{{ ansible_facts['user_id'] }}"
+        mode: "0600"
+        force: true

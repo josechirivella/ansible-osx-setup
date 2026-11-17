@@ -3,4 +3,4 @@
   shell: curl -fsSL https://opencode.ai/install | bash
   args:
     executable: /bin/bash
-    creates: "{{ ansible_facts['env']['HOME'] }}/.opencode/bin/opencode"
+    creates: "{{ user_home }}/.opencode/bin/opencode"
