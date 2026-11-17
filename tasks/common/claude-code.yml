@@ -3,4 +3,4 @@
   shell: curl -fsSL https://claude.ai/install.sh | bash
   args:
     executable: /bin/bash
-    creates: "{{ ansible_facts['env']['HOME'] }}/.local/bin/claude"
+    creates: "{{ ansible_facts['env']['HOME'] | default(ansible_facts['user_dir'], true) }}/.local/bin/claude"
