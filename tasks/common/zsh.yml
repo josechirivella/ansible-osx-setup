@@ -13,8 +13,8 @@
 - name: Install Oh My ZSH
   shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
   args:
-    creates: "/Users/{{ lookup('env', 'USER') }}/.oh-my-zsh"
+    creates: "{{ user_home }}/.oh-my-zsh"
 
 - name: Set ZSH as the default shell
-  shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
+  shell: chsh -s $(which zsh) {{ ansible_facts['user_id'] }}
   become: true
