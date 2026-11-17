@@ -3,18 +3,18 @@
   shell: curl -fsSL https://mise.run | sh
   args:
     executable: /bin/bash
-    creates: "{{ ansible_env.HOME }}/.local/bin/mise"
+    creates: "{{ ansible_facts['env']['HOME'] }}/.local/bin/mise"
 
 - name: Ensure mise config directory exists
   file:
-    path: "{{ ansible_env.HOME }}/.config/mise"
+    path: "{{ ansible_facts['env']['HOME'] }}/.config/mise"
     state: directory
 
 - name: Create mise config
   template:
     src: templates/mise-config.toml.j2
-    dest: "{{ ansible_env.HOME }}/.config/mise/config.toml"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.config/mise/config.toml"
 
 - name: Install runtimes defined in mise config
-  command: "{{ ansible_env.HOME }}/.local/bin/mise install"
+  command: "{{ ansible_facts['env']['HOME'] }}/.local/bin/mise install"
   changed_when: false
